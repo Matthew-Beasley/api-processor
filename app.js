@@ -63,6 +63,46 @@ const getOfferingData = (offer, product, company) => {
         return offer;
 }
 
+const nOrMoroffers = (comps, offers, minOffers) => {
+    let companiesThatQualify = [];
+
+    comps.forEach((company => {
+        company.availableOffers = [];
+        offers.forEach(offer => {
+            if (company.id === offer.companyId) {
+                company.availableOffers.push(offer);
+            }
+        })
+    }))
+
+    companiesThatQualify = comps.reduce((acc, co) => {
+        if (co.availableOffers.length >= minOffers) {
+            acc.push(co);
+        }
+        return acc;
+    }, [])
+    return companiesThatQualify;
+}
+
+const averagePriceOfOfferings = (prods, offers) => {
+
+    const averagePrices = prods.map(prod => {
+        prod.avgOfferPrice = 0;
+        let offerCount = 0;
+
+        offers.forEach( offer => {
+            if (offer.productId === prod.id) {
+                prod.avgOfferPrice += offer.price;
+                offerCount++;
+            }
+        })
+        prod.avgOfferPrice = prod.avgOfferPrice / offerCount;
+        offerCount = 0
+        return prod;
+    })
+    return averagePrices;
+}
+
 const fetchData = (endPoint) => new Promise((res, rej) => {
     return fetch(`${BASE_URL}${endPoint}`)
             .then(response => response.json())
@@ -74,16 +114,10 @@ const fetchData = (endPoint) => new Promise((res, rej) => {
 Promise.all([fetchData(COMPANIES_ENDPOINT), fetchData(PRODUTS_ENDPOINT), fetchData(OFFERINGS_ENDPOINT)])
     .then(([companies, products, offerings]) => {
 
-        //console.log(findProcuctsInPriceRange(products, range));
-        //console.log(groupCompaniesByLetter(companies));
-        //console.log(groupCompaniesByState(companies));
+        console.log(findProcuctsInPriceRange(products, range));
+        console.log(groupCompaniesByLetter(companies));
+        console.log(groupCompaniesByState(companies));
         console.log(getOfferingData(offerings, products, companies));
-
+        console.log(nOrMoroffers(companies, offerings, 3));
+        console.log(averagePriceOfOfferings(products, offerings));
     });
-
-
-// returns and array of the offerings with eah offering having a company and product
-
-// returns the companies that have n or more offerings
-
-//returns an array of products where each product has the average proce of its offerings
